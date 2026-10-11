@@ -1,0 +1,25 @@
+[package]
+name = "gnohub-gui"
+description = "Interfaz gráfica de GnoHub"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "gnohub"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build.workspace = true
+
+[dependencies]
+gnohub-core.workspace = true
+evdev.workspace = true
+tauri.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+directories.workspace = true
+zbus.workspace = true
+base64.workspace = true
+rust-i18n.workspace = true

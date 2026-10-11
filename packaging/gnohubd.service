@@ -1,0 +1,11 @@
+[Unit]
+Description=GnoHub: macros y remapeo de botones
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/gnohubd run
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

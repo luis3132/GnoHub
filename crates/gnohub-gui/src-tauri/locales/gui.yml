@@ -1,0 +1,77 @@
+_version: 2
+
+common.no_home:
+  en: "the HOME directory was not found"
+  es: "no se encontró el directorio HOME"
+detect.unreadable:
+  en: "can't read device %{id}; check permissions in Settings"
+  es: "no se puede leer el dispositivo %{id}; revisa los permisos en Ajustes"
+detect.unnamed:
+  en: "that button sends %{button}, which has no name and can't be assigned"
+  es: "ese botón envía %{button}, que no tiene nombre y no se puede asignar"
+service.systemctl_failed:
+  en: "could not run systemctl: %{error}"
+  es: "no se pudo ejecutar systemctl: %{error}"
+service.not_installed:
+  en: "the gnohubd service is not installed; install the GnoHub package"
+  es: "el servicio gnohubd no está instalado; instala el paquete de GnoHub"
+extension.not_installed:
+  en: "the extension is not installed; install the GnoHub package"
+  es: "la extensión no está instalada; instala el paquete de GnoHub"
+extension.enable_failed:
+  en: "could not enable the extension"
+  es: "no se pudo habilitar la extensión"
+access.already_granted:
+  en: "that device already has access or was disconnected"
+  es: "ese dispositivo ya tiene acceso o se desconectó"
+access.pkexec_failed:
+  en: "could not run pkexec: %{error}"
+  es: "no se pudo ejecutar pkexec: %{error}"
+access.denied:
+  en: "permission was not granted"
+  es: "no se concedió el permiso"
+definitions.bad_id:
+  en: "“%{id}” is not a hexadecimal VID:PID"
+  es: "«%{id}» no es un VID:PID en hexadecimal"
+definitions.bad_image:
+  en: "could not read the image “%{image}”"
+  es: "no se pudo leer la imagen «%{image}»"
+ratbag.system_bus:
+  en: "could not connect to the system bus: %{error}"
+  es: "no se pudo conectar al bus del sistema: %{error}"
+ratbag.no_profiles:
+  en: "the mouse has no profiles"
+  es: "el ratón no tiene perfiles"
+ratbag.commit_rejected:
+  en: "the mouse rejected the changes (code %{code})"
+  es: "el ratón rechazó los cambios (código %{code})"
+ratbag.not_supported:
+  en: "ratbagd does not recognise this device"
+  es: "ratbagd no reconoce este dispositivo"
+ratbag.no_dpi_level:
+  en: "that DPI level does not exist"
+  es: "ese nivel de DPI no existe"
+ratbag.no_led:
+  en: "that LED does not exist"
+  es: "ese LED no existe"
+ratbag.set_failed:
+  en: "could not change %{what}: %{error}"
+  es: "no se pudo cambiar %{what}: %{error}"
+ratbag.unknown_mapping:
+  en: "that function can't be written to the mouse"
+  es: "esa función no se puede escribir en el ratón"
+ratbag.reprogram_failed:
+  en: "could not reprogram the button: %{error}"
+  es: "no se pudo reprogramar el botón: %{error}"
+ratbag.no_free_keys:
+  en: "there are no free buttons or keys left to reprogram more buttons"
+  es: "no quedan botones ni teclas libres para reprogramar más botones"
+ratbag.no_backup:
+  en: "the original function of this button was not saved; choose which one to give it"
+  es: "no se guardó la función original de este botón; elige cuál darle"
+service.daemon_missing:
+  en: "the gnohubd program was not found; build it with `cargo build` or install the GnoHub package"
+  es: "no se encontró el programa gnohubd; compílalo con `cargo build` o instala el paquete de GnoHub"
+service.embedded_failed:
+  en: "could not start gnohubd: %{error}"
+  es: "no se pudo arrancar gnohubd: %{error}"

@@ -1,0 +1,18 @@
+[package]
+name = "gnohubd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+gnohub-core.workspace = true
+evdev.workspace = true
+tokio.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+directories.workspace = true
+zbus.workspace = true
+futures-util.workspace = true
+serde_json.workspace = true

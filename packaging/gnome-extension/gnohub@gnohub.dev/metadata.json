@@ -1,0 +1,13 @@
+{
+  "uuid": "gnohub@gnohub.dev",
+  "name": "GnoHub",
+  "description": "Informa a GnoHub de qué aplicación tiene el foco, para aplicar perfiles de botones por aplicación. Solo publica el identificador y la clase de la ventana, nunca su título.",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "./schema.json",
+  "name": "Logitech G502 HERO",
+  "kind": "mouse",
+  "match": [
+    "046d:c08b"
+  ],
+  "notes": {
+    "en": "G6 to G9 are handled by the mouse's internal memory (DPI and profiles). Click one and press “Use in GnoHub” to make it send a free key, so you can assign it anything.",
+    "es": "G6 a G9 los gestiona la memoria interna del ratón (DPI y perfiles). Pulsa «Usar en GnoHub» en uno de ellos para que envíe una tecla libre y poder asignarle lo que quieras."
+  },
+  "buttons": [
+    {
+      "id": "G1",
+      "label": {
+        "en": "Left click",
+        "es": "Clic izquierdo"
+      },
+      "emits": "BTN_LEFT",
+      "hw_index": 0
+    },
+    {
+      "id": "G2",
+      "label": {
+        "en": "Right click",
+        "es": "Clic derecho"
+      },
+      "emits": "BTN_RIGHT",
+      "hw_index": 1
+    },
+    {
+      "id": "G3",
+      "label": {
+        "en": "Wheel click",
+        "es": "Clic de rueda"
+      },
+      "emits": "BTN_MIDDLE",
+      "hw_index": 2
+    },
+    {
+      "id": "G4",
+      "label": {
+        "en": "Side back",
+        "es": "Lateral atrás"
+      },
+      "emits": "BTN_SIDE",
+      "hw_index": 3
+    },
+    {
+      "id": "G5",
+      "label": {
+        "en": "Side forward",
+        "es": "Lateral adelante"
+      },
+      "emits": "BTN_EXTRA",
+      "hw_index": 4
+    },
+    {
+      "id": "G6",
+      "label": {
+        "en": "Precision",
+        "es": "Precisión"
+      },
+      "hw_index": 5
+    },
+    {
+      "id": "G7",
+      "label": {
+        "en": "DPI down",
+        "es": "Bajar DPI"
+      },
+      "hw_index": 6
+    },
+    {
+      "id": "G8",
+      "label": {
+        "en": "DPI up",
+        "es": "Subir DPI"
+      },
+      "hw_index": 7
+    },
+    {
+      "id": "G9",
+      "label": {
+        "en": "Change profile",
+        "es": "Cambiar perfil"
+      },
+      "hw_index": 8
+    },
+    {
+      "id": "←",
+      "label": {
+        "en": "Wheel left",
+        "es": "Rueda a la izquierda"
+      },
+      "emits": "WHEEL_LEFT",
+      "hw_index": 10
+    },
+    {
+      "id": "→",
+      "label": {
+        "en": "Wheel right",
+        "es": "Rueda a la derecha"
+      },
+      "emits": "WHEEL_RIGHT",
+      "hw_index": 9
+    }
+  ]
+}

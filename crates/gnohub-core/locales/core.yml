@@ -1,0 +1,44 @@
+_version: 2
+
+config.read_failed:
+  en: "could not read %{path}: %{error}"
+  es: "no se pudo leer %{path}: %{error}"
+config.invalid_toml:
+  en: "invalid TOML: %{error}"
+  es: "TOML inválido: %{error}"
+config.serialize_failed:
+  en: "could not convert to TOML: %{error}"
+  es: "no se pudo convertir a TOML: %{error}"
+config.empty_macro:
+  en: "the macro “%{name}” has no steps"
+  es: "la macro «%{name}» no tiene pasos"
+config.delay_too_short:
+  en: "%{context}: “%{field}” must be at least %{min} ms"
+  es: "%{context}: «%{field}» debe ser de al menos %{min} ms"
+config.zero_repeat:
+  en: "%{context}: repeat must be at least 1"
+  es: "%{context}: las repeticiones deben ser al menos 1"
+config.empty_sequence:
+  en: "%{context}: a sequence needs at least one of “on press”, “while held” or “on release”"
+  es: "%{context}: una secuencia necesita al menos una de «al pulsar», «mientras se mantiene» o «al soltar»"
+config.empty_remap:
+  en: "%{context}: choose at least one key to remap to"
+  es: "%{context}: elige al menos una tecla a la que reasignar"
+config.duplicate_button:
+  en: "%{device}: the button %{button} is assigned more than once"
+  es: "%{device}: el botón %{button} está asignado más de una vez"
+config.empty_app_list:
+  en: "%{context}: add at least one application"
+  es: "%{context}: indica al menos una aplicación"
+config.unknown_macro:
+  en: "%{context}: the macro “%{name}” does not exist"
+  es: "%{context}: la macro «%{name}» no existe"
+config.context.button:
+  en: "%{device}, button %{button}"
+  es: "%{device}, botón %{button}"
+config.context.profile:
+  en: "%{device}, profile “%{name}”"
+  es: "%{device}, perfil «%{name}»"
+button.unknown:
+  en: "“%{name}” is not a known key, button or wheel direction"
+  es: "«%{name}» no es una tecla, botón ni dirección de rueda conocida"

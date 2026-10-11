@@ -1,0 +1,189 @@
+:root {
+  --bg: #181b20;
+  --rail: #14171b;
+  --panel: #21252c;
+  --panel-2: #282d35;
+  --line: #333943;
+  --text: #e6e3dc;
+  --muted: #959ba5;
+  --faint: #6b717b;
+  --signal: #f0a63a;
+  --signal-ink: #22180a;
+  --signal-soft: rgba(240, 166, 58, 0.14);
+  --danger: #ef6461;
+  --ok: #6fcf97;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --font: "Adwaita Sans", "Cantarell", "Inter", system-ui, sans-serif;
+  --mono: "Adwaita Mono", "Source Code Pro", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 22px;
+}
+
+h2 {
+  font-size: 16px;
+}
+
+h3 {
+  font-size: 14px;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: var(--radius-s);
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button:hover:not(:disabled) {
+  border-color: #4a515c;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--signal-ink);
+  font-weight: 600;
+}
+
+button.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+button.ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--line);
+}
+
+button.danger {
+  color: var(--danger);
+}
+
+input,
+select,
+textarea {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  padding: 6px 8px;
+  min-width: 0;
+}
+
+input[type="number"] {
+  width: 90px;
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 1px;
+}
+
+label.field {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+/* Teclas y botones dibujados como keycaps: el rasgo visual de la app. */
+.keycap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 28px;
+  justify-content: center;
+  padding: 2px 8px 3px;
+  border: 1px solid #4a515c;
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  background: linear-gradient(#2f343d, #2a2e36);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.keycap.lit {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* WebKitGTK no siempre aplica el esquema oscuro a las opciones desplegadas. */
+option,
+optgroup {
+  background: var(--panel);
+  color: var(--text);
+}

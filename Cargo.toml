@@ -1,0 +1,34 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/gnohub-core",
+    "crates/gnohub-daemon",
+    "crates/gnohub-gui/src-tauri",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+gnohub-core = { path = "crates/gnohub-core" }
+evdev = { version = "0.13.2", features = ["tokio", "serde"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "signal", "process"] }
+serde = { version = "1", features = ["derive"] }
+toml = "1"
+serde_json = "1"
+toml_edit = "0.25"
+base64 = "0.22"
+rust-i18n = "4"
+sys-locale = "0.3"
+zbus = { version = "5", default-features = false, features = ["tokio"] }
+futures-util = { version = "0.3", default-features = false }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+directories = "6"
+tauri = { version = "2", features = [] }
+tauri-build = { version = "2", features = [] }

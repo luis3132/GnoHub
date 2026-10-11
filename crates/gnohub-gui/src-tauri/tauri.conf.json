@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "GnoHub",
+  "mainBinaryName": "gnohub",
+  "version": "0.0.1",
+  "identifier": "dev.gnohub.GnoHub",
+  "build": {
+    "beforeDevCommand": "cargo build -p gnohubd && bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run build && cargo build --release -p gnohubd",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "GnoHub",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 940,
+        "minHeight": 620
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "rpm",
+      "deb"
+    ],
+    "category": "Utility",
+    "shortDescription": "Macros y remapeo de botones para ratones y teclados",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "linux": {
+      "rpm": {
+        "depends": [
+          "libratbag-ratbagd"
+        ],
+        "files": {
+          "/usr/bin/gnohubd": "../../../target/release/gnohubd",
+          "/usr/lib/systemd/user/gnohubd.service": "../../../packaging/gnohubd.service",
+          "/usr/lib/udev/rules.d/70-gnohub-uinput.rules": "../../../packaging/70-gnohub-uinput.rules",
+          "/usr/share/gnome-shell/extensions/gnohub@gnohub.dev": "../../../packaging/gnome-extension/gnohub@gnohub.dev",
+          "/usr/share/gnohub/devices": "../../../devices"
+        },
+        "postInstallScript": "../../../packaging/postinstall.sh",
+        "preRemoveScript": "../../../packaging/preremove.sh",
+        "postRemoveScript": "../../../packaging/postremove.sh"
+      },
+      "deb": {
+        "depends": [
+          "ratbagd"
+        ],
+        "files": {
+          "/usr/bin/gnohubd": "../../../target/release/gnohubd",
+          "/usr/lib/systemd/user/gnohubd.service": "../../../packaging/gnohubd.service",
+          "/usr/lib/udev/rules.d/70-gnohub-uinput.rules": "../../../packaging/70-gnohub-uinput.rules",
+          "/usr/share/gnome-shell/extensions/gnohub@gnohub.dev": "../../../packaging/gnome-extension/gnohub@gnohub.dev",
+          "/usr/share/gnohub/devices": "../../../devices"
+        },
+        "postInstallScript": "../../../packaging/postinstall.sh",
+        "preRemoveScript": "../../../packaging/preremove.sh",
+        "postRemoveScript": "../../../packaging/postremove.sh"
+      }
+    }
+  }
+}

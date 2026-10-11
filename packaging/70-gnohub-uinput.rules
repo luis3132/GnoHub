@@ -1,0 +1,4 @@
+# GnoHub: el usuario con sesión activa puede crear dispositivos virtuales
+# (necesario para emitir macros). El acceso a cada ratón o teclado se concede
+# desde la app con «Dar acceso» y se guarda en /etc/udev/rules.d/70-gnohub.rules.
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"

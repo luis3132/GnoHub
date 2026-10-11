@@ -1,0 +1,74 @@
+# Configuración de ejemplo para el Logitech G502 HERO.
+# Cópiala a ~/.config/gnohub/config.toml y valida con `gnohubd check`.
+#
+# Los nombres de los botones salen de `gnohubd watch 046d:c08b`.
+# Los nombres de teclas son los de linux/input-event-codes.h (KEY_A, KEY_LEFTCTRL, BTN_LEFT...).
+
+# ---------------------------------------------------------------- macros ----
+# Cada macro define su propio `step_delay`: milisegundos entre cada paso
+# (mínimo 1, por defecto 10).
+#
+# Acciones disponibles:
+#   { tap = "KEY_A" }                       pulsar y soltar
+#   { down = "KEY_LEFTSHIFT" }              mantener
+#   { up = "KEY_LEFTSHIFT" }                soltar
+#   { chord = ["KEY_LEFTCTRL", "KEY_C"] }   combinación
+#   { delay = 50 }                          espera (ms, mínimo 1); sustituye al step_delay en ese punto
+#   { move = [dx, dy] }                     mover el puntero
+#   { scroll = 1 }                          rueda (positivo = arriba)
+#   { command = "notify-send hola" }        ejecutar un comando
+
+[macros.copiar]
+step_delay = 10
+actions = [{ chord = ["KEY_LEFTCTRL", "KEY_C"] }]
+
+[macros.pegar]
+step_delay = 10
+actions = [{ chord = ["KEY_LEFTCTRL", "KEY_V"] }]
+
+[macros.rafaga]
+step_delay = 1
+actions = [{ tap = "BTN_LEFT" }]
+
+# ----------------------------------------------------------- dispositivo ----
+[[devices]]
+name = "G502 HERO"
+vendor = 0x046d
+product = 0xc08b
+
+# Modos:
+#   remap       el botón actúa como otra tecla/combinación      (to = [...])
+#   press       macro al pulsar, `repeat` veces                 (macro, repeat, repeat_delay)
+#   while_held  repite la macro mientras se mantiene            (macro, repeat_delay)
+#   toggle      una pulsación la arranca, la siguiente la para  (macro, repeat_delay)
+#   sequence    al pulsar / mientras se mantiene / al soltar    (on_press, while_held, on_release)
+#   tap_hold    pulsación corta → tap; mantener → hold          (tap, hold, hold_time, hold_repeat)
+# `macro`, `tap`, `hold`, `on_*` aceptan el nombre de una macro o una macro propia
+# del botón: { step_delay = 10, actions = [...] }.
+# `repeat_delay` (pausa entre repeticiones) vale por defecto el step_delay de la macro.
+
+# G4 (atrás): pulsación corta copia, mantener 300 ms pega.
+[[devices.bindings]]
+button = "BTN_SIDE"
+mode = "tap_hold"
+tap = "copiar"
+hold = "pegar"
+hold_time = 300
+
+# G5 (adelante): clic automático mientras se mantiene, cada 30 ms.
+[[devices.bindings]]
+button = "BTN_EXTRA"
+mode = "while_held"
+macro = "rafaga"
+repeat_delay = 30
+
+# Los botones G6-G9 los gestiona el firmware (DPI, perfiles) y no envían
+# eventos. Asígnales "Botón 6/7/8" en Piper (ya lo tienes instalado), mira con
+# `gnohubd watch` qué nombre envían y añádelos aquí, por ejemplo:
+#
+# [[devices.bindings]]
+# button = "BTN_FORWARD"
+# mode = "sequence"
+# on_press = { actions = [{ down = "KEY_LEFTSHIFT" }] }
+# while_held = { step_delay = 5, actions = [{ tap = "KEY_W" }, { delay = 100 }] }
+# on_release = { actions = [{ up = "KEY_LEFTSHIFT" }] }

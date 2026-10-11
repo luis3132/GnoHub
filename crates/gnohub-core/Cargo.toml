@@ -1,0 +1,16 @@
+[package]
+name = "gnohub-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+evdev.workspace = true
+serde.workspace = true
+toml.workspace = true
+toml_edit.workspace = true
+rust-i18n.workspace = true
+sys-locale.workspace = true
+
+[dev-dependencies]
+serde_json = "1"
