@@ -85,6 +85,12 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
       ];
     case "grant_access":
       return null;
+    case "installed_games":
+      return [
+        { id: "steam:730", name: "Counter-Strike 2", source: "steam" },
+        { id: "steam:526870", name: "Satisfactory", source: "steam" },
+        { id: "exe:speed.exe", name: "Need For Speed Most Wanted", source: "lutris" },
+      ];
     case "installed_apps":
       return [
         { id: "org.mozilla.firefox", name: "Firefox", wm_class: "firefox" },

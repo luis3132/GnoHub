@@ -12,6 +12,7 @@ import type {
   DeviceKind,
   DeviceSummary,
   FocusStatus,
+  Game,
   Hardware,
   InstalledApp,
   LockedDevice,
@@ -43,6 +44,7 @@ class AppState {
   devices = $state<DeviceSummary[]>([]);
   locked = $state<LockedDevice[]>([]);
   installedApps = $state<InstalledApp[]>([]);
+  games = $state<Game[]>([]);
   focus = $state<FocusStatus | null>(null);
   definitions = $state<Definition[]>([]);
   definitionErrors = $state<string[]>([]);
@@ -221,7 +223,9 @@ class AppState {
   }
 
   async loadApps() {
-    if (this.installedApps.length === 0) this.installedApps = await api.installedApps();
+    if (this.installedApps.length === 0) {
+      [this.installedApps, this.games] = await Promise.all([api.installedApps(), api.installedGames()]);
+    }
   }
 
   async refreshFocus() {

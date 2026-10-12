@@ -11,6 +11,7 @@ mod access;
 mod apps;
 mod definitions;
 mod detect;
+mod games;
 mod piper;
 mod ratbag;
 mod service;
@@ -77,6 +78,12 @@ async fn grant_access(vendor: u16, product: u16) -> Result<(), String> {
 #[tauri::command]
 fn installed_apps() -> Vec<apps::InstalledApp> {
     apps::installed()
+}
+
+/// Juegos instalados en Steam, Lutris y Heroic.
+#[tauri::command]
+fn installed_games() -> Vec<games::Game> {
+    games::installed()
 }
 
 #[tauri::command]
@@ -234,6 +241,7 @@ fn main() {
             locked_devices,
             grant_access,
             installed_apps,
+            installed_games,
             hardware,
             device_definitions,
             set_dpi,
@@ -291,6 +299,7 @@ mod dump {
             "locked_devices": super::locked_devices(),
             "device_definitions": super::device_definitions(),
             "installed_apps": super::installed_apps(),
+            "installed_games": super::installed_games(),
             "focus_status": super::focus_status().await,
             "system_status": super::system_status().await,
             "hardware": hardware,

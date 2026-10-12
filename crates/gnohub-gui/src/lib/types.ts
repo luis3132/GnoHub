@@ -69,6 +69,14 @@ export interface InstalledApp {
   wm_class: string | null;
 }
 
+/** Juego instalado (Steam, Lutris, Heroic) tal como se pone en un perfil. */
+export interface Game {
+  /** `steam:730` o `exe:speed.exe`. */
+  id: string;
+  name: string;
+  source: "steam" | "lutris" | "heroic";
+}
+
 export interface FocusStatus {
   desktop: "gnome" | "hyprland" | "sway" | "i3" | "x11" | "otro";
   extension_installed: boolean;

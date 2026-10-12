@@ -17,6 +17,7 @@ entorno: GNOME, KDE, Hyprland, Sway, i3, X11 o Wayland, e incluso una TTY.
 | Retardo entre pasos por macro (mínimo 1 ms), `delay` explícito, repeticiones | |
 | Rueda e inclinación de rueda como botones (`WHEEL_*`) | |
 | Perfiles por aplicación: GNOME (extensión), Hyprland, Sway, i3, X11 | |
+| Perfiles por juego: juegos de Steam, Lutris y Heroic, o cualquier ejecutable; solo con el juego en primer plano | |
 | Hardware vía ratbagd: DPI, frecuencia, LED y reprogramar botones del firmware | |
 | Definiciones de periféricos en JSON (`devices/`) y dibujos interactivos de Piper | |
 | Recarga en caliente, reconexión de dispositivos, permisos desde la interfaz | |

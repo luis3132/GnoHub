@@ -220,6 +220,22 @@ pub struct ActiveApp {
     pub app_id: String,
     /// Clase de ventana X11 / `app_id` de Wayland (`firefox`).
     pub wm_class: String,
+    /// Ejecutables del proceso de la ventana (ver `process::info`).
+    pub executables: Vec<String>,
+    /// ID de Steam del juego, si lo lanzó Steam.
+    pub steam_app: Option<String>,
+}
+
+impl ActiveApp {
+    /// Completa los datos del proceso de la ventana a partir de su PID.
+    pub fn with_process(mut self, pid: Option<u32>) -> Self {
+        if let Some(pid) = pid.filter(|p| *p > 0) {
+            let info = crate::process::info(pid);
+            self.executables = info.executables;
+            self.steam_app = info.steam_app;
+        }
+        self
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -230,12 +246,34 @@ pub struct AppProfile {
 }
 
 impl AppProfile {
+    /// ¿Es `app` (la ventana enfocada) una de las de este perfil? Cada entrada
+    /// es un identificador de aplicación o clase de ventana, `exe:<ejecutable>`
+    /// o `steam:<id>`.
     pub fn matches(&self, app: &ActiveApp) -> bool {
-        self.apps.iter().any(|a| {
-            !a.is_empty()
-                && (a.eq_ignore_ascii_case(&app.app_id) || a.eq_ignore_ascii_case(&app.wm_class))
-        })
+        self.apps.iter().any(|entry| matches_entry(entry, app))
     }
+}
+
+fn matches_entry(entry: &str, app: &ActiveApp) -> bool {
+    let entry = entry.trim();
+    if entry.is_empty() {
+        return false;
+    }
+    if let Some(exe) = entry.strip_prefix("exe:") {
+        let wanted = crate::process::basename(exe);
+        return !wanted.is_empty() && app.executables.contains(&wanted);
+    }
+    if let Some(id) = entry.strip_prefix("steam:") {
+        let id = id.trim();
+        // Steam marca sus juegos con `SteamAppId` y sus ventanas con la clase
+        // `steam_app_<id>` (también los de Proton).
+        return !id.is_empty()
+            && (app.steam_app.as_deref() == Some(id)
+                || app
+                    .wm_class
+                    .eq_ignore_ascii_case(&format!("steam_app_{id}")));
+    }
+    entry.eq_ignore_ascii_case(&app.app_id) || entry.eq_ignore_ascii_case(&app.wm_class)
 }
 
 #[derive(Debug, Clone)]
@@ -701,10 +739,12 @@ mod tests {
         let firefox = ActiveApp {
             app_id: String::new(),
             wm_class: "Firefox".into(),
+            ..Default::default()
         };
         let other = ActiveApp {
             app_id: "org.gnome.Nautilus".into(),
             wm_class: "nautilus".into(),
+            ..Default::default()
         };
         let remap_to = |b: Option<&Binding>| match b {
             Some(Binding::Remap(k)) => Some(k[0]),
@@ -759,6 +799,39 @@ mod tests {
         let en = err.to_string();
         assert_eq!(es, "la macro «x» no tiene pasos");
         assert_eq!(en, "the macro “x” has no steps");
+    }
+
+    #[test]
+    fn profiles_match_executables_and_steam_games() {
+        let profile = AppProfile {
+            name: "Juegos".into(),
+            apps: vec!["exe:Speed.exe".into(), "steam:730".into()],
+            bindings: HashMap::new(),
+        };
+        let nfs = ActiveApp {
+            wm_class: "speed.exe".into(),
+            executables: vec!["wine64-preloader".into(), "speed.exe".into()],
+            ..Default::default()
+        };
+        let cs2_by_env = ActiveApp {
+            wm_class: "cs2".into(),
+            steam_app: Some("730".into()),
+            ..Default::default()
+        };
+        let cs2_by_class = ActiveApp {
+            wm_class: "steam_app_730".into(),
+            ..Default::default()
+        };
+        let other_game = ActiveApp {
+            wm_class: "steam_app_2483190".into(),
+            steam_app: Some("2483190".into()),
+            executables: vec!["forzahorizon6.exe".into()],
+            ..Default::default()
+        };
+        assert!(profile.matches(&nfs));
+        assert!(profile.matches(&cs2_by_env));
+        assert!(profile.matches(&cs2_by_class));
+        assert!(!profile.matches(&other_game));
     }
 
     #[test]

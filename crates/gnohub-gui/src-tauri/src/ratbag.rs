@@ -774,7 +774,9 @@ mod live {
     async fn live_set_same_dpi() {
         let hw = super::hardware(0x046d, 0xc08b).await.unwrap().unwrap();
         let level = hw.resolutions.iter().find(|r| r.active).unwrap();
-        super::set_dpi(0x046d, 0xc08b, level.index, level.dpi).await.unwrap();
+        super::set_dpi(0x046d, 0xc08b, level.index, level.dpi)
+            .await
+            .unwrap();
         let after = super::hardware(0x046d, 0xc08b).await.unwrap().unwrap();
         assert_eq!(after.resolutions[level.index as usize].dpi, level.dpi);
         println!("DPI {} reescrito sin errores", level.dpi);

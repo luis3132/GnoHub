@@ -58,7 +58,7 @@ fn publish(tx: &Sink, app: ActiveApp) {
         if current.as_ref() == Some(&app) {
             return false;
         }
-        debug!(app_id = %app.app_id, wm_class = %app.wm_class, "foco");
+        debug!(app_id = %app.app_id, wm_class = %app.wm_class, exes = ?app.executables, steam = ?app.steam_app, "foco");
         *current = Some(app);
         true
     });
@@ -70,10 +70,10 @@ fn publish(tx: &Sink, app: ActiveApp) {
     default_path = "/dev/gnohub/Focus"
 )]
 trait FocusService {
-    fn get(&self) -> zbus::Result<(String, String)>;
+    fn get(&self) -> zbus::Result<(String, String, u32)>;
 
     #[zbus(signal)]
-    fn changed(&self, app_id: String, wm_class: String) -> zbus::Result<()>;
+    fn changed(&self, app_id: String, wm_class: String, pid: u32) -> zbus::Result<()>;
 }
 
 async fn gnome(tx: Sink) {
@@ -91,8 +91,8 @@ async fn gnome_once(tx: &Sink) -> zbus::Result<()> {
     let mut changes = proxy.receive_changed().await?;
     // Al (re)aparecer la extensión se pide el estado actual.
     let mut owners = proxy.inner().receive_owner_changed().await?;
-    if let Ok((app_id, wm_class)) = proxy.get().await {
-        publish(tx, ActiveApp { app_id, wm_class });
+    if let Ok((app_id, wm_class, pid)) = proxy.get().await {
+        publish(tx, window(app_id, wm_class, Some(pid)));
     } else {
         info!("la extensión de GNOME no está activa; los perfiles por aplicación no se aplicarán");
     }
@@ -100,12 +100,12 @@ async fn gnome_once(tx: &Sink) -> zbus::Result<()> {
         tokio::select! {
             Some(signal) = changes.next() => {
                 let args = signal.args()?;
-                publish(tx, ActiveApp { app_id: args.app_id, wm_class: args.wm_class });
+                publish(tx, window(args.app_id, args.wm_class, Some(args.pid)));
             }
             Some(owner) = owners.next() => {
                 if owner.is_some() {
-                    if let Ok((app_id, wm_class)) = proxy.get().await {
-                        publish(tx, ActiveApp { app_id, wm_class });
+                    if let Ok((app_id, wm_class, pid)) = proxy.get().await {
+                        publish(tx, window(app_id, wm_class, Some(pid)));
                     }
                 } else {
                     tx.send_replace(None);
@@ -129,16 +129,11 @@ async fn hyprland(tx: Sink, signature: String) {
             };
             let mut lines = BufReader::new(stream).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                // activewindow>>CLASE,TÍTULO
+                // activewindow>>CLASE,TÍTULO (el PID se pide aparte a hyprctl)
                 if let Some(rest) = line.strip_prefix("activewindow>>") {
                     let class = rest.split(',').next().unwrap_or_default().to_owned();
-                    publish(
-                        &tx,
-                        ActiveApp {
-                            app_id: class.clone(),
-                            wm_class: class,
-                        },
-                    );
+                    let pid = hyprland_active_pid().await;
+                    publish(&tx, window(class.clone(), class, pid));
                 }
             }
         }
@@ -184,10 +179,14 @@ fn parse_i3_event(line: &str) -> Option<ActiveApp> {
         .as_str()
         .filter(|s| !s.is_empty())
         .unwrap_or(class);
-    Some(ActiveApp {
-        app_id: app_id.to_owned(),
-        wm_class: if class.is_empty() { app_id } else { class }.to_owned(),
-    })
+    let pid = container["pid"]
+        .as_u64()
+        .and_then(|p| u32::try_from(p).ok());
+    Some(window(
+        app_id.to_owned(),
+        if class.is_empty() { app_id } else { class }.to_owned(),
+        pid,
+    ))
 }
 
 async fn x11(tx: Sink) {
@@ -207,14 +206,8 @@ async fn x11(tx: Sink) {
                     let Some(id) = line.rsplit(' ').next().filter(|id| id.starts_with("0x")) else {
                         continue;
                     };
-                    if let Some(class) = x11_class(id).await {
-                        publish(
-                            &tx,
-                            ActiveApp {
-                                app_id: class.clone(),
-                                wm_class: class,
-                            },
-                        );
+                    if let Some((class, pid)) = x11_window(id).await {
+                        publish(&tx, window(class.clone(), class, pid));
                     }
                 }
             }
@@ -224,14 +217,41 @@ async fn x11(tx: Sink) {
     }
 }
 
-/// Segunda cadena de `WM_CLASS` (la clase; la primera es la instancia).
-async fn x11_class(window: &str) -> Option<String> {
+/// Clase y PID de una ventana X11.
+async fn x11_window(id: &str) -> Option<(String, Option<u32>)> {
     let out = Command::new("xprop")
-        .args(["-id", window, "WM_CLASS"])
+        .args(["-id", id, "WM_CLASS", "_NET_WM_PID"])
         .output()
         .await
         .ok()?;
-    parse_wm_class(&String::from_utf8_lossy(&out.stdout))
+    let text = String::from_utf8_lossy(&out.stdout);
+    let class_line = text.lines().find(|l| l.starts_with("WM_CLASS"))?;
+    let pid = text
+        .lines()
+        .find(|l| l.starts_with("_NET_WM_PID"))
+        .and_then(|l| l.split_once('=')?.1.trim().parse().ok());
+    Some((parse_wm_class(class_line)?, pid))
+}
+
+/// PID de la ventana activa en Hyprland.
+async fn hyprland_active_pid() -> Option<u32> {
+    let out = Command::new("hyprctl")
+        .args(["activewindow", "-j"])
+        .output()
+        .await
+        .ok()?;
+    let json: serde_json::Value = serde_json::from_slice(&out.stdout).ok()?;
+    json["pid"].as_u64().and_then(|p| u32::try_from(p).ok())
+}
+
+/// La ventana enfocada, con los datos de su proceso (ejecutable, juego de Steam).
+fn window(app_id: String, wm_class: String, pid: Option<u32>) -> ActiveApp {
+    ActiveApp {
+        app_id,
+        wm_class,
+        ..Default::default()
+    }
+    .with_process(pid)
 }
 
 fn parse_wm_class(text: &str) -> Option<String> {
@@ -250,7 +270,7 @@ mod tests {
 
     #[test]
     fn parses_sway_and_i3_focus_events() {
-        let sway = r#"{"change":"focus","container":{"app_id":"org.gnome.Nautilus","window_properties":null}}"#;
+        let sway = r#"{"change":"focus","container":{"app_id":"org.gnome.Nautilus","pid":0,"window_properties":null}}"#;
         let app = parse_i3_event(sway).unwrap();
         assert_eq!(app.app_id, "org.gnome.Nautilus");
         assert_eq!(app.wm_class, "org.gnome.Nautilus");

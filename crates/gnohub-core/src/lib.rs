@@ -9,6 +9,7 @@ pub mod button;
 pub mod config;
 pub mod devices;
 pub mod file;
+pub mod process;
 
 pub use action::{Action, Step};
 pub use button::{Button, Wheel};

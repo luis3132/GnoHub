@@ -33,6 +33,7 @@
       const ledIndex = /led=(\d+)/.exec(location.hash)?.[1];
       if (button) selected = decodeURIComponent(button);
       if (ledIndex) selectedLed = Number(ledIndex);
+      if (location.hash.includes("perfil")) addProfile();
     }
   });
 
@@ -206,7 +207,7 @@
             <Icon name="alert" size={15} /> {t("device.gnomeNeedsExtension")}
           </p>
         {/if}
-        <p class="hint">{t("device.inherits")}</p>
+        <p class="hint">{t("device.focusOnly")} {t("device.inherits")}</p>
       </section>
     {/if}
 
