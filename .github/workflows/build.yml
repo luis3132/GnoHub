@@ -1,0 +1,100 @@
+# Compila GnoHub en Linux x86_64 y arm64 y genera los paquetes .rpm y .deb.
+#
+# - En cada push y pull request: tests, comprobación de tipos y paquetes
+#   (descargables como artefactos del workflow).
+# - Al subir una etiqueta `v*` (p. ej. `git tag v0.0.1 && git push --tags`):
+#   además publica los paquetes en una release de GitHub.
+#
+# Cada arquitectura compila de forma nativa en su runner, sin compilación
+# cruzada (WebKitGTK no se lleva bien con ella).
+
+name: Build
+
+on:
+  push:
+    branches: [master, main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Linux ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev librsvg2-dev libssl-dev \
+            libayatana-appindicator3-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.arch }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Dependencias de la interfaz
+        working-directory: crates/gnohub-gui
+        run: bun install --frozen-lockfile
+
+      - name: Tests de Rust
+        run: cargo test --workspace --locked
+
+      - name: Comprobación de tipos de la interfaz
+        working-directory: crates/gnohub-gui
+        run: bun run check
+
+      - name: Compilar y empaquetar
+        working-directory: crates/gnohub-gui
+        run: bun tauri build
+
+      - name: Subir paquetes
+        uses: actions/upload-artifact@v4
+        with:
+          name: gnohub-linux-${{ matrix.arch }}
+          path: |
+            target/release/bundle/rpm/*.rpm
+            target/release/bundle/deb/*.deb
+          if-no-files-found: error
+
+  release:
+    name: Publicar release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: paquetes
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: paquetes/*
+          generate_release_notes: true

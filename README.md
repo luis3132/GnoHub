@@ -1,5 +1,7 @@
 # GnoHub
 
+[![Build](https://github.com/luis3132/GnoHub/actions/workflows/build.yml/badge.svg)](https://github.com/luis3132/GnoHub/actions/workflows/build.yml)
+
 Versión 0.0.1.
 
 Alternativa a Logitech G Hub para Linux, escrita en Rust: macros, remapeo de
@@ -40,6 +42,10 @@ Después, abre GnoHub y pulsa **Dar acceso** en tu ratón o teclado. En GNOME,
 cierra sesión y vuelve a entrar una vez para que se cargue la extensión.
 
 Para desinstalar: `sudo dnf remove gno-hub` (también borra los permisos concedidos).
+
+Los paquetes también se compilan en GitHub Actions para x86_64 y arm64: en
+cada push quedan como artefactos del workflow, y al subir una etiqueta
+(`git tag v0.0.1 && git push --tags`) se publican en una release.
 
 ## Desarrollo
 
