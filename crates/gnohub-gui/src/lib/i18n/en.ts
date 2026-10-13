@@ -323,6 +323,25 @@ export const en = {
   toast: {
     close: "Close",
   },
+  updates: {
+    title: "Updates",
+    version: "Version {version}",
+    check: "Check for updates",
+    checking: "Checking…",
+    upToDate: "You have the latest version.",
+    available: "GnoHub {version} is available",
+    current: "You have {version}",
+    showNotes: "What's new",
+    hideNotes: "Hide notes",
+    update: "Update",
+    installing: "Downloading and installing…",
+    installed: "Installed. Restart GnoHub to use the new version.",
+    restart: "Restart",
+    download: "Download {name}",
+    openPage: "Open the release page",
+    autoHint: "Updates are verified with a signature and installed from here; the system asks for your password.",
+    manualHint: "This copy can't update itself (it wasn't installed from a signed package): you'll get the package to install.",
+  },
 };
 
 type Shape<T> = { [K in keyof T]: T[K] extends string ? string : Shape<T[K]> };

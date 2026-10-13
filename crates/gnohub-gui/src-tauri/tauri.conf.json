@@ -71,5 +71,13 @@
         "postRemoveScript": "../../../packaging/postremove.sh"
       }
     }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/luis3132/GnoHub/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

@@ -15,6 +15,7 @@ mod games;
 mod piper;
 mod ratbag;
 mod service;
+mod updates;
 
 use std::path::PathBuf;
 
@@ -233,6 +234,7 @@ async fn detect_button(
 fn main() {
     gnohub_core::set_locale(gnohub_core::system_locale());
     tauri::Builder::default()
+        .plugin(updates::plugin())
         .invoke_handler(tauri::generate_handler![
             load_config,
             validate_config,
@@ -259,6 +261,10 @@ fn main() {
             system_status,
             service_action,
             detect_button,
+            updates::update_check,
+            updates::update_install,
+            updates::update_restart,
+            updates::open_release_url,
         ])
         .build(tauri::generate_context!())
         .expect("error al iniciar GnoHub")

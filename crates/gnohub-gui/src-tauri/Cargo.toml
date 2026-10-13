@@ -23,3 +23,5 @@ directories.workspace = true
 zbus.workspace = true
 base64.workspace = true
 rust-i18n.workspace = true
+tauri-plugin-updater = { version = "2", default-features = false, features = ["rustls-tls", "zip"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

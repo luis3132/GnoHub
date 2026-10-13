@@ -204,4 +204,17 @@ export interface LoadedConfig {
   file: ConfigFile;
 }
 
+export interface UpdateInfo {
+  current: string;
+  latest: string;
+  newer: boolean;
+  notes: string | null;
+  page_url: string;
+  published_at: string | null;
+  /** `auto`: se instala desde la app. `download`: se ofrece el paquete. */
+  install: "auto" | "download";
+  download_url: string | null;
+  asset_name: string | null;
+}
+
 export type ServiceAction = "install" | "start" | "stop" | "restart";

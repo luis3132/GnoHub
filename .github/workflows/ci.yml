@@ -1,0 +1,73 @@
+# Comprobaciones en cada push y pull request: compila y pasa los tests en Linux
+# x86_64 y arm64, y comprueba los tipos de la interfaz. Los paquetes se generan
+# en `release.yml`, al subir una etiqueta.
+
+name: ci
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: linux-${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            os: ubuntu-22.04
+          - arch: arm64
+            os: ubuntu-22.04-arm
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Dependencias de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+            build-essential curl wget file libssl-dev
+
+      - name: Cache de cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ci-${{ matrix.arch }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: ci-${{ matrix.arch }}-cargo-
+
+      - name: Dependencias de la interfaz
+        working-directory: crates/gnohub-gui
+        run: bun install --frozen-lockfile
+
+      # La interfaz no depende de la arquitectura: basta con comprobarla una vez.
+      - name: Tipos de la interfaz
+        if: matrix.arch == 'amd64'
+        working-directory: crates/gnohub-gui
+        run: bun run check
+
+      # La app Tauri incrusta `dist/` al compilar, así que hace falta antes de los tests.
+      - name: Compilar la interfaz
+        working-directory: crates/gnohub-gui
+        run: bun run build
+
+      - name: Tests de Rust
+        run: cargo test --workspace --locked

@@ -1,6 +1,6 @@
 # GnoHub
 
-[![Build](https://github.com/luis3132/GnoHub/actions/workflows/build.yml/badge.svg)](https://github.com/luis3132/GnoHub/actions/workflows/build.yml)
+[![ci](https://github.com/luis3132/GnoHub/actions/workflows/ci.yml/badge.svg)](https://github.com/luis3132/GnoHub/actions/workflows/ci.yml)
 
 Versión 0.0.1.
 
@@ -43,9 +43,32 @@ cierra sesión y vuelve a entrar una vez para que se cargue la extensión.
 
 Para desinstalar: `sudo dnf remove gno-hub` (también borra los permisos concedidos).
 
-Los paquetes también se compilan en GitHub Actions para x86_64 y arm64: en
-cada push quedan como artefactos del workflow, y al subir una etiqueta
-(`git tag v0.0.1 && git push --tags`) se publican en una release.
+## Versiones y actualizaciones
+
+En cada push, `ci.yml` compila y pasa los tests en Linux x86_64 y arm64. Para
+publicar una versión:
+
+1. Sube la versión en `Cargo.toml` (`[workspace.package]`),
+   `crates/gnohub-gui/package.json` y `crates/gnohub-gui/src-tauri/tauri.conf.json`.
+2. Escribe las notas en `.github/releases/vX.Y.Z.md`.
+3. `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+`release.yml` compila los `.rpm` y `.deb` de las dos arquitecturas (con
+`bun run release`, el mismo comando que en local) y los publica en una release
+con su `latest.json`.
+
+La app busca versiones nuevas en las releases de GitHub. Para que además se
+**actualice sola**, los paquetes tienen que ir firmados. Se configura una vez en
+el repositorio:
+
+```sh
+bunx tauri signer generate -w ~/.tauri/gnohub.key     # llave privada + pública
+gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/gnohub.key
+gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD      # la contraseña elegida
+gh variable set TAURI_UPDATER_PUBKEY < ~/.tauri/gnohub.key.pub
+```
+
+Sin la firma la app avisa de la versión nueva y ofrece descargar el paquete.
 
 ## Desarrollo
 

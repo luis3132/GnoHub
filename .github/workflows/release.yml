@@ -1,0 +1,191 @@
+# Release: compila GnoHub en Linux amd64 y arm64, genera los .rpm y .deb y los publica
+# en una release de GitHub con el `latest.json` del actualizador de la app.
+#
+#   git tag v0.0.2 && git push origin v0.0.2
+#
+# Cada arquitectura compila de forma nativa en su runner: el arm64 de Linux necesita
+# hardware ARM de verdad (cruzar desde x64 exigiría un sysroot arm64 completo con
+# webkit2gtk). Y en Ubuntu 22.04, no 24.04: los paquetes enlazan contra la glibc del
+# runner, así que compilar en la más vieja soportada es lo que los hace correr en más
+# distros.
+#
+# Cada runner corre el mismo comando que se corre a mano (`bun run release`), así que no
+# hay un camino de CI distinto del local que pueda divergir.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  # Para probar el build completo sin publicar nada.
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-amd64
+            os: ubuntu-22.04
+          - name: linux-arm64
+            os: ubuntu-22.04-arm
+
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # `libappindicator3-dev` NO va: choca con el de ayatana, que es el que usa Tauri v2.
+      - name: Dependencias de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+            build-essential curl wget file libssl-dev xdg-utils
+
+      - name: Cache de cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.name }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: ${{ matrix.name }}-cargo-
+
+      - name: Dependencias de la interfaz
+        working-directory: crates/gnohub-gui
+        run: bun install --frozen-lockfile
+
+      - name: Tipos de la interfaz
+        if: matrix.name == 'linux-amd64'
+        working-directory: crates/gnohub-gui
+        run: bun run check
+
+      - name: Tests de Rust
+        run: |
+          (cd crates/gnohub-gui && bun run build)
+          cargo test --workspace --locked
+
+      # El cache trae `target/` de la corrida anterior y el bundler nunca vacía `bundle/`:
+      # deja el paquete nuevo AL LADO de los viejos, y el upload se los llevaría todos.
+      - name: Limpiar paquetes de versiones anteriores
+        run: rm -rf target/release/bundle
+
+      # Con la llave de firma en los secrets, cada paquete sale firmado (`.sig`) para el
+      # actualizador de la app. Sin el secret sale igual, sin actualización automática.
+      - name: Build
+        working-directory: crates/gnohub-gui
+        run: bun run release
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # La llave PÚBLICA, que la app lleva dentro para verificar lo que baja.
+          GNOHUB_UPDATER_PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gnohub-${{ matrix.name }}
+          # Que una celda suba un artefacto vacío es peor que fallar: la release quedaría
+          # incompleta sin que nada se ponga en rojo.
+          if-no-files-found: error
+          path: |
+            target/release/bundle/deb/*.deb
+            target/release/bundle/rpm/*.rpm
+            target/release/bundle/**/*.sig
+
+      # Fuera del cache de cargo, que se guarda al final del job: si no, la próxima versión
+      # volvería a publicar estos paquetes.
+      - name: Sacar los paquetes del cache
+        run: rm -rf target/release/bundle
+
+  # Crea la release del tag y le cuelga los paquetes de las dos arquitecturas. Corre una
+  # sola vez, cuando todas terminaron, para que no exista una release a medias.
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # `upload-artifact` conserva las carpetas; se aplanan porque lo que ve quien descarga
+      # es el nombre del archivo.
+      - name: Juntar los paquetes
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          antes=$(find artifacts -type f | wc -l)
+          # `-n` no pisa: dos celdas con el mismo nombre de archivo tienen que notarse aquí.
+          find artifacts -type f -exec mv -n -t dist/ {} +
+          despues=$(find dist -type f | wc -l)
+          if [ "$antes" -ne "$despues" ]; then
+            echo "::error::$antes archivos en $despues destinos: hay nombres repetidos entre celdas"
+            find artifacts -type f
+            exit 1
+          fi
+
+          # Los paquetes llevan la versión en el nombre (GnoHub_0.0.2_amd64.deb…): uno que
+          # no la lleve es un resto de otra versión, y es mejor una release en rojo que una
+          # que ofrece la vieja como si fuera la nueva.
+          version="${GITHUB_REF_NAME#v}"
+          nucleo="${version%%-*}"
+          ajenos=$(find dist -type f ! -name "*${nucleo}*")
+          if [ -n "$ajenos" ]; then
+            echo "::error::Hay paquetes que no son de la versión $version (¿falta subir la versión en tauri.conf.json y Cargo.toml?)"
+            echo "$ajenos"
+            exit 1
+          fi
+
+          echo "Se van a publicar $despues archivos:"
+          ls -lh dist/
+
+      - uses: oven-sh/setup-bun@v2
+
+      # Lo que lee el actualizador de la app. Sin paquetes firmados no se escribe y la
+      # release sale igual.
+      - name: Manifiesto del actualizador
+        run: bun scripts/updater-manifest.mjs dist "${GITHUB_REF_NAME}" "${GITHUB_REPOSITORY}" ".github/releases/${GITHUB_REF_NAME}.md"
+
+      # Las notas se escriben a mano en `.github/releases/<tag>.md`: describen qué cambió
+      # para quien usa la app, y eso no sale de la lista de commits. Si no están, GitHub
+      # genera las suyas.
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          notes=".github/releases/${tag}.md"
+
+          args=(--verify-tag --title "$tag")
+          if [ -f "$notes" ]; then
+            echo "Notas: $notes"
+            args+=(--notes-file "$notes")
+          else
+            echo "No hay $notes: GitHub genera las notas"
+            args+=(--generate-notes)
+          fi
+
+          # Un tag con guion (v0.1.0-beta.1) es una prerelease.
+          case "$tag" in *-*) args+=(--prerelease) ;; esac
+
+          # Idempotente: si la release ya existe (re-run), se reemplazan sus archivos.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "La release $tag ya existe: reemplazando sus archivos"
+            gh release upload "$tag" dist/* --clobber
+          else
+            gh release create "$tag" dist/* "${args[@]}"
+          fi

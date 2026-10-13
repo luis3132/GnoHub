@@ -75,3 +75,24 @@ service.daemon_missing:
 service.embedded_failed:
   en: "could not start gnohubd: %{error}"
   es: "no se pudo arrancar gnohubd: %{error}"
+updates.github_unreachable:
+  en: "could not reach GitHub: %{error}"
+  es: "no se pudo consultar GitHub: %{error}"
+updates.github_error:
+  en: "GitHub returned an error: %{error}"
+  es: "GitHub respondió con un error: %{error}"
+updates.no_tag:
+  en: "the latest release has no tag"
+  es: "la última release no tiene etiqueta"
+updates.no_auto:
+  en: "this version can't update itself; download the package"
+  es: "esta versión no se actualiza sola; descarga el paquete"
+updates.check_failed:
+  en: "could not look for the update: %{error}"
+  es: "no se pudo buscar la actualización: %{error}"
+updates.none:
+  en: "there is no newer version"
+  es: "no hay una versión más nueva"
+updates.install_failed:
+  en: "could not install the update: %{error}"
+  es: "no se pudo instalar la actualización: %{error}"

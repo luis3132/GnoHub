@@ -114,6 +114,21 @@ export async function mockInvoke(cmd: string, args: Record<string, unknown> = {}
       return null;
     case "take_over_button":
       return "KEY_F13";
+    case "update_check":
+      return {
+        current: "0.0.1",
+        latest: "0.0.2",
+        newer: true,
+        notes: "# v0.0.2\n\n- Ejemplo de notas de la versión.",
+        page_url: "https://github.com/luis3132/GnoHub/releases/tag/v0.0.2",
+        published_at: null,
+        install: "auto",
+        download_url: null,
+        asset_name: null,
+      };
+    case "update_install":
+    case "update_restart":
+    case "open_release_url":
     case "restore_button":
     case "set_locale":
       return null;

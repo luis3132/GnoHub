@@ -5,6 +5,7 @@
   import Icon from "./lib/components/Icon.svelte";
   import MacrosPage from "./lib/components/MacrosPage.svelte";
   import SettingsPage from "./lib/components/SettingsPage.svelte";
+  import UpdateNotifier from "./lib/components/UpdateNotifier.svelte";
   import { i18n, initLocale, setLocale, t } from "./lib/i18n/index.svelte";
   import { app } from "./lib/state.svelte";
   import type { LockedDevice } from "./lib/types";
@@ -225,6 +226,8 @@
       {/if}
     </footer>
   {/if}
+
+  <UpdateNotifier />
 
   {#if app.toast}
     <div class="toast" class:error={app.toast.kind === "error"} role="status">{app.toast.text}</div>

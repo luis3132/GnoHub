@@ -2,6 +2,7 @@
   import { api } from "../api";
   import { i18n, LOCALES, setLocale, t, type Locale } from "../i18n/index.svelte";
   import { app } from "../state.svelte";
+  import { updates } from "../updates.svelte";
   import type { ServiceAction } from "../types";
   import Icon from "./Icon.svelte";
 
@@ -146,6 +147,32 @@
       {/each}
     </section>
   {/if}
+
+  <section>
+    <h2>{t("updates.title")}</h2>
+    {#if updates.info}
+      <p class="hint">{t("updates.version", { version: updates.info.current })}</p>
+      {#if updates.info.newer}
+        <p class="ok"><Icon name="alert" size={15} /> {t("updates.available", { version: updates.info.latest })}</p>
+      {:else}
+        <p class="ok"><Icon name="check" size={15} /> {t("updates.upToDate")}</p>
+      {/if}
+      <p class="hint">{updates.info.install === "auto" ? t("updates.autoHint") : t("updates.manualHint")}</p>
+    {/if}
+    {#if updates.error}<p class="warn"><Icon name="alert" size={15} /> {updates.error}</p>{/if}
+    <div class="buttons">
+      <button
+        type="button"
+        disabled={updates.phase === "checking" || updates.phase === "installing"}
+        onclick={async () => {
+          const info = await updates.check();
+          if (info?.newer) updates.dismissed = null;
+        }}
+      >
+        {updates.phase === "checking" ? t("updates.checking") : t("updates.check")}
+      </button>
+    </div>
+  </section>
 
   <section>
     <h2>{t("settings.configFile")}</h2>

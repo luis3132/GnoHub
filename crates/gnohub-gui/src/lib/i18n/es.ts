@@ -324,4 +324,23 @@ export const es: Dictionary = {
   toast: {
     close: "Cerrar",
   },
+  updates: {
+    title: "Actualizaciones",
+    version: "Versión {version}",
+    check: "Buscar actualizaciones",
+    checking: "Buscando…",
+    upToDate: "Tienes la última versión.",
+    available: "GnoHub {version} está disponible",
+    current: "Tienes la {version}",
+    showNotes: "Novedades",
+    hideNotes: "Ocultar novedades",
+    update: "Actualizar",
+    installing: "Descargando e instalando…",
+    installed: "Instalada. Reinicia GnoHub para usar la versión nueva.",
+    restart: "Reiniciar",
+    download: "Descargar {name}",
+    openPage: "Abrir la página de la versión",
+    autoHint: "Las actualizaciones se verifican con una firma y se instalan desde aquí; el sistema pide tu contraseña.",
+    manualHint: "Esta copia no se actualiza sola (no se instaló desde un paquete firmado): se te ofrecerá el paquete para instalarlo.",
+  },
 };
